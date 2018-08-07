@@ -71,6 +71,11 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.init()
     
     def init(self):
+        #this sets the dependent variables
+        [ self.rxmodels.append('py') for i in range(self.Rxantennas) ];
+        [ self.Disableuser.append(False) for i in range(self.Users) ]              #Disable data transmission for cerrtain users
+        self.Rxantennalocations=np.arange(self.Rxantennas)*0.3
+
         self.dut=f2_chip(self)
         #self.dut.bbsigdict=self.bbsigdict_sinusoid
         #self.dut.bbsigdict=self.bbsigdict_sinusoid3
@@ -108,7 +113,7 @@ class f2_testbench(thesdk,analyzers_mixin):
         #Signal generator model here
         self.signal_gen_rx=f2_signal_gen(self)
         self.signal_gen_rx.bbsigdict=self.bbsigdict
-        self.signal_gen_rx.Txantennas=self.Rxantennas 
+        #self.signal_gen_rx.Txantennas=self.Rxantennas 
         self.signal_gen_rx.Txpower=self.Txpower
         self.signal_gen_rx.Users=self.Users 
         self.signal_gen_rx.bbsigdict=self.bbsigdict
@@ -124,7 +129,6 @@ class f2_testbench(thesdk,analyzers_mixin):
 
         #Add the channel between 
         self.channel=f2_channel(self)
-        print(len(self.channel._Z.Value))
 
         #Make this as an array of pointers
         self.channel.iptr_A=self.signal_gen_rx._Z
