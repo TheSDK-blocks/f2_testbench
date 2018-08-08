@@ -495,7 +495,7 @@ class f2_testbench(thesdk,analyzers_mixin):
 
 
         #Plot the tx output signals
-        timex = np.array(range(0,10000))
+        timex = np.array(range(15000,len(self.dut.tx_dacs[0]._Z.Value)))
         ymax=0
         for i in range(self.Txantennas):
             ymax=np.amax([ymax, np.amax(np.amax(np.absolute(np.real(self.dut.tx_dacs[i]._Z.Value))))])
@@ -512,7 +512,7 @@ class f2_testbench(thesdk,analyzers_mixin):
 
             #Spectrum
         for i in range(self.Txantennas):
-            argdict={'sigin':self.dut.tx_dacs[i]._Z.Value,
+            argdict={'sigin':self.dut.tx_dacs[i]._Z.Value[timex],
                      'ymax':3, 
                      'ymin':spectrumfloorideal,
                      'nperseg':1024, 
