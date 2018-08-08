@@ -103,7 +103,7 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.signal_gen_tx.bbsigdict=self.bbsigdict
         self.signal_gen_tx.Digital='True'
         self.signal_gen_tx.Rs=self.Rs_dsp
-        self.signal_gen_tx.Bits=self.Txbits
+        self.signal_gen_tx.Bits=10
 
         # Matrix of [1,time,users] 
         #We could add an IO to dut.
@@ -465,7 +465,7 @@ class f2_testbench(thesdk,analyzers_mixin):
             self.spectrum_analyzer(**argdict)
 
     def analyze_tx_dsp(self):
-        timex = np.array(range(0,1023))
+        timex = np.array(range(0,200))
         
         spectrumfloor=-40
         spectrumfloorideal=-75
@@ -478,24 +478,24 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'ymax'    :1.1*ymax,
                      'ymin'    :-1.1*ymax, 
                      'tstr'    :"Tx, User=%i" %(k),
-                     'printstr':"%s/F2_system_Tx_input_Rs_%i_k=%i.eps" %(self.picpath, self.Rs, k)}
+                     'printstr':"%s/F2_system_Tx_input_Rs_%i_k=%i.eps" %(self.picpath, self.Rs_dsp, k)}
             self.oscilloscope(argdict)
 
-            #Spectrum
+        #Spectrum
+        timex = np.array(range(0,1023))
         for i in range(self.Users):
             argdict={'sigin':self.signal_gen_tx._Z.Value[i,:,0],
+                     'Rs'   :self.Rs_dsp,
                      'ymax':3, 
                      'ymin':spectrumfloorideal,
                      'nperseg':1024, 
                      'tstr' : "Tx, User:%i" %(i),
-                     'printstr':"%s/F2_system_Tx_input_Spectrum_Rs_%i_k=%i.eps" %(self.picpath, self.Rs, i)} 
+                     'printstr':"%s/F2_system_Tx_input_Spectrum_Rs_%i_k=%i.eps" %(self.picpath, self.Rs_dsp, i)} 
             self.spectrum_analyzer(**argdict)
 
-
-
-
         #Plot the tx output signals
-        timex = np.array(range(15000,len(self.dut.tx_dacs[0]._Z.Value)))
+        #timex = np.array(range(15000,len(self.dut.tx_dacs[0]._Z.Value)))
+        timex = np.array(range(17000,19000))
         ymax=0
         for i in range(self.Txantennas):
             ymax=np.amax([ymax, np.amax(np.amax(np.absolute(np.real(self.dut.tx_dacs[i]._Z.Value))))])
@@ -509,10 +509,11 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'printstr':"%s/F2_system_Tx_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i) }
             self.oscilloscope(argdict)
 
-
+        timex = np.array(range(17000,len(self.dut.tx_dacs[0]._Z.Value)))
             #Spectrum
         for i in range(self.Txantennas):
             argdict={'sigin':self.dut.tx_dacs[i]._Z.Value[timex],
+                     'Rs'   :self.Rs,
                      'ymax':3, 
                      'ymin':spectrumfloorideal,
                      'nperseg':1024, 
