@@ -103,7 +103,7 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.signal_gen_tx.bbsigdict=self.bbsigdict
         self.signal_gen_tx.Digital='True'
         self.signal_gen_tx.Rs=self.Rs_dsp
-        self.signal_gen_tx.Bits=10
+        self.signal_gen_tx.Bits=13
 
         # Matrix of [1,time,users] 
         #We could add an IO to dut.
