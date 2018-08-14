@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 from thesdk import *
 import multiprocessing
 from joblib import Parallel, delayed
-from f2_chip import *
 from signal_generator_802_11n import *
+from f2_util_classes import *
+
+from f2_chip import *
 from f2_channel import *
 from f2_testbench.analyzers_mixin import *
 
@@ -105,9 +107,10 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.signal_gen_tx.Rs=self.Rs_dsp
         self.signal_gen_tx.Bits=13
 
-        # Matrix of [1,time,users] 
+        # Matrix of [users,time,antennas] 
         #We could add an IO to dut.
-        self.dut.tx_dsp.iptr_A=self.signal_gen_tx._Z
+        #Cant connect here. Formats incompatible
+        #self.dut.tx_dsp.iptr_A=self.signal_gen_tx._Z
 
         #RX_signal_generator
         #Signal generator model here
@@ -140,6 +143,8 @@ class f2_testbench(thesdk,analyzers_mixin):
     
     def run_tx(self):
         self.signal_gen_tx.init()
+        for i in range(self.Users):
+            self.dut.tx_dsp.iptr_A.data[i].udata.Value=self.signal_gen_tx._Z.Value[i,:,0].reshape(-1,1)
         self.dut.run_tx_dsp()
         self.analyze_tx_dsp()
 
