@@ -431,19 +431,19 @@ class f2_testbench(thesdk,analyzers_mixin):
         ymax=0
         k=0
         for i in range(self.Rxantennas):
-                ymax=np.amax([ymax,np.amax(np.absolute(np.real(self.dut.serdes._Z.Value[i].Value)))])
+                ymax=np.amax([ymax,np.amax(np.absolute(np.real(self.dut.rx_dsp._io_ofifo.data[i].udata.Value)))])
 
         ##Plot the DSP output signals
         for i in range(4):
             argdict={'timex'   :timex, 
-                     'sigin'   :np.real(self.dut.rx_dsp._decimated.Value[i].Value[timex]),
+                     'sigin'   :np.real(self.dut.rx_dsp._io_ofifo.data[i].udata.Value[timex]),
                      'ymax'    :1.1*ymax,
                      'ymin'    :-1.1*ymax, 
                      'tstr'    :"DSP, dspmodel=%s, Ant=%i" %(self.dut.rx_dsp.model,i),
                      'printstr': "%s/F2_system_DSP_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)} 
             self.oscilloscope(argdict)
 
-            argdict={'sigin':self.dut.rx_dsp._decimated.Value[i].Value  ,
+            argdict={'sigin':self.dut.rx_dsp._io_ofifo.data[i].udata.Value,
                      'ymax'    :3, 
                      'ymin'    :spectrumfloorideal,
                      'Rs'      :self.Rs_dsp,
@@ -452,22 +452,22 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'printstr':"%s/F2_system_DSP_Spectrum_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
             self.spectrum_analyzer(**argdict)
 
-            argdict={'timex'   :timex, 
-                     'sigin'   :np.real(self.dut.serdes._Z.Value[i].Value[timex]),
-                     'ymax'    :1.1*ymax,
-                     'ymin'    :-1.1*ymax, 
-                     'tstr'    : "Serdes, %s, Ant=%i" %(self.dut.serdes.model,i),
-                     'printstr':"%s/F2_system_serdes_Rs_%i_m=%i.eps" %(self.picpath, self.Rs,i)} 
-            self.oscilloscope(argdict)
+            #argdict={'timex'   :timex, 
+            #         'sigin'   :np.real(self.dut.serdes._Z.Value[i].Value[timex]),
+            #         'ymax'    :1.1*ymax,
+            #         'ymin'    :-1.1*ymax, 
+            #         'tstr'    : "Serdes, %s, Ant=%i" %(self.dut.serdes.model,i),
+            #         'printstr':"%s/F2_system_serdes_Rs_%i_m=%i.eps" %(self.picpath, self.Rs,i)} 
+            #self.oscilloscope(argdict)
 
-            argdict={'sigin'   :self.dut.serdes._Z.Value[i].Value,
-                     'ymax'    :3, 
-                     'ymin'    :spectrumfloorideal,
-                     'Rs'      :self.Rs_dsp,
-                     'nperseg' :1024, 
-                     'tstr'    : "Serdes, Rx=%i" %(i), 
-                     'printstr':"%s/F2_system_serdes_Spectrum_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
-            self.spectrum_analyzer(**argdict)
+            #argdict={'sigin'   :self.dut.serdes._Z.Value[i].Value,
+            #         'ymax'    :3, 
+            #         'ymin'    :spectrumfloorideal,
+            #         'Rs'      :self.Rs_dsp,
+            #         'nperseg' :1024, 
+            #         'tstr'    : "Serdes, Rx=%i" %(i), 
+            #         'printstr':"%s/F2_system_serdes_Spectrum_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
+            #self.spectrum_analyzer(**argdict)
 
     def analyze_tx_dsp(self):
         timex = np.array(range(0,200))
