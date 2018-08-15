@@ -44,13 +44,11 @@ class f2_testbench(thesdk,analyzers_mixin):
 
     def __init__(self,*arg):
         self.picpath=[]
-        self.rxmodels=[]
         #Signals should be in form s(user,time,Txantenna)
         self.Txantennas=1                       #All the antennas process the same data
         self.Txpower=30                         #Output power per antenna in dBm
         self.Rxantennas=4
         self.Users=2
-        self.Disableuser=[]
         self.Nbits=10  #ADC bits
         self.Txbits=9  #DAC bits
         self.Channeldir='Uplink'
@@ -74,7 +72,9 @@ class f2_testbench(thesdk,analyzers_mixin):
     
     def init(self):
         #this sets the dependent variables
+        self.rxmodels=[]
         [ self.rxmodels.append('py') for i in range(self.Rxantennas) ];
+        self.Disableuser=[]
         [ self.Disableuser.append(False) for i in range(self.Users) ]              #Disable data transmission for cerrtain users
         self.Rxantennalocations=np.arange(self.Rxantennas)*0.3
 
@@ -91,10 +91,8 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.dut.Rs=self.Rs
         self.dut.Txbits=self.Txbits
         self.dut.Txpower=0
-        self.dut.define_fader2()
-        self.dut.tx_dsp.model='sv'
         self.dut.init()
-        self.dut.define_fader2()
+        self.dut.dsp.model='sv'
 
         #TX_signal_generator
         #Signal generator model here
@@ -137,23 +135,24 @@ class f2_testbench(thesdk,analyzers_mixin):
         #Make this as an array of pointers
         self.channel.iptr_A=self.signal_gen_rx._Z
 
+        #Connections must be propagated top down.
         #Connect rxs to channel 
         for i in range(self.Rxantennas):
-            self.dut.rx[i].iptr_A=self.channel._Z.Value[i]
-    
+            #Define connections by lower levels of hierarchies.
+            self.channel._Z.Value[i]=self.dut.iptr_A.Value[i] 
+
     def run_tx(self):
-        self.signal_gen_tx.init()
+        self.signal_gen_tx.init() # this must be re-inited, because output 
+                                  # is not compatible with input of tx_dsp
         for i in range(self.Users):
+            #Drive signal to DUT
             self.dut.tx_dsp.iptr_A.data[i].udata.Value=self.signal_gen_tx._Z.Value[i,:,0].reshape(-1,1)
         self.dut.run_tx_dsp()
         self.analyze_tx_dsp()
 
     def run_rx(self):
         self.signal_gen_rx.init()
-        print(self.signal_gen_rx.Users)
-        print(self.signal_gen_rx.Disableuser)
         self.signal_gen_rx.set_transmit_power()
-        print(self.channel) 
         self.channel.run()
         self.dut.run_rx_dsp()
 
@@ -431,19 +430,19 @@ class f2_testbench(thesdk,analyzers_mixin):
         ymax=0
         k=0
         for i in range(self.Rxantennas):
-                ymax=np.amax([ymax,np.amax(np.absolute(np.real(self.dut.rx_dsp._io_ofifo.data[i].udata.Value)))])
+                ymax=np.amax([ymax,np.amax(np.absolute(np.real(self.dut.dsp._io_lanes_tx[0].data[i].udata.Value)))])
 
         ##Plot the DSP output signals
         for i in range(4):
             argdict={'timex'   :timex, 
-                     'sigin'   :np.real(self.dut.rx_dsp._io_ofifo.data[i].udata.Value[timex]),
+                     'sigin'   :np.real(self.dut.dsp._io_lanes_tx[0].data[i].udata.Value[timex]),
                      'ymax'    :1.1*ymax,
                      'ymin'    :-1.1*ymax, 
-                     'tstr'    :"DSP, dspmodel=%s, Ant=%i" %(self.dut.rx_dsp.model,i),
+                     'tstr'    :"DSP, dspmodel=%s, Ant=%i" %(self.dut.dsp.model,i),
                      'printstr': "%s/F2_system_DSP_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)} 
             self.oscilloscope(argdict)
 
-            argdict={'sigin':self.dut.rx_dsp._io_ofifo.data[i].udata.Value,
+            argdict={'sigin':self.dut.dsp._io_lanes_tx[0].data[i].udata.Value,
                      'ymax'    :3, 
                      'ymin'    :spectrumfloorideal,
                      'Rs'      :self.Rs_dsp,
