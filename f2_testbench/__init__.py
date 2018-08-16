@@ -146,7 +146,7 @@ class f2_testbench(thesdk,analyzers_mixin):
                                   # is not compatible with input of tx_dsp
         for i in range(self.Users):
             #Drive signal to DUT
-            self.dut.tx_dsp.iptr_A.data[i].udata.Value=self.signal_gen_tx._Z.Value[i,:,0].reshape(-1,1)
+            self.dut.dsp._io_lanes_rx[0].data[i].udata.Value=self.signal_gen_tx._Z.Value[i,:,0].reshape(-1,1)
         self.dut.run_tx_dsp()
         self.analyze_tx_dsp()
 
