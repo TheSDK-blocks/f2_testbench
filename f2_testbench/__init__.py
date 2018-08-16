@@ -93,7 +93,6 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.dut.Txbits=self.Txbits
         self.dut.Txpower=0
         self.dut.init()
-        self.dut.dsp.model='sv'
 
         #TX_signal_generator
         #Signal generator model here
