@@ -57,6 +57,7 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.dsp_decimator_model='py'
         self.dsp_decimator_scales=[1,1,1,1]
         self.noisetemp=290
+        self.nserdes=2
         self.Rs=160e6
         self.Rs_dsp=20e6
         self.Hstf=1                             #Synchronization filter
