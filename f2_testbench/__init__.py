@@ -80,16 +80,10 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.Rxantennalocations=np.arange(self.Rxantennas)*0.3
 
         self.dut=f2_chip(self)
-        #self.dut.bbsigdict=self.bbsigdict_sinusoid
-        #self.dut.bbsigdict=self.bbsigdict_sinusoid3
         self.dut.bbsigdict=self.bbsigdict
 
-        #self.dut.bbsigdict=f2s.f2_chip.bbsigdict_ofdm_sinusoid3
-        #self.dut.bbsigdict=f2s.f2_chip.bbsigdict_randombitstream_QAM4_OFDM
-        #self.dut.bbsigdict=f2s.f2_chip.bbsigdict_802_11n_random_QAM16_OFDM
-
-        self.dut.Users=self.Users
-        self.dut.Rs=self.Rs
+        #self.dut.Users=self.Users
+        #self.dut.Rs=self.Rs
         self.dut.Txbits=self.Txbits
         self.dut.Txpower=0
         self.dut.init()
@@ -121,14 +115,6 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.signal_gen_rx.bbsigdict=self.bbsigdict
         self.signal_gen_rx.Rs=self.Rs
 
-        #The mached filters for the symbol synchronization
-        #These are considered reconfigurable
-        #self.Hstf=np.conj(self.signal_gen_rx.sg802_11n._PLPCseq_short[0:64])
-        #self.dut.Hstf=self.Hstf[::-1]
-        #self.Hltf=np.conj(self.signal_gen_rx.sg802_11n._PLPCseq_long[0:16])
-        #self.dut.Hltf=self.Hltf[::-1]
-        #self.signal_gen_rx.set_transmit_power() #default 30dBm
-
         #Add the channel between 
         self.channel=f2_channel(self)
 
@@ -156,176 +142,6 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.channel.run()
         self.dut.run_rx_dsp()
 
-    def analyze_simple(self):
-        timex = np.array(range(0,10000))
-        spectrumfloor=-40
-        spectrumfloorideal=-75
-        #Plot signal generator outputs
-        ymax=np.amax(np.amax(np.amax(np.absolute(np.real(self.signal_gen._Z.Value)))))
-        for k in range(self.Users):
-            argdict={'I'       :np.real(self.signal_gen._qam_reference[k,:]), 
-                     'Q'       :np.imag(self.signal_gen._qam_reference[k,:]),
-                     'ymax'    :1.1*np.max(np.abs(np.real(self.signal_gen._qam_reference[k,:]))),
-                     'ymin'    :-1.1*np.max(np.abs(np.imag(self.signal_gen._qam_reference[k,:]))), 
-                     'tstr'    : "QAM data, Usr=%i" %(k),
-                     'printstr':"%s/F2_system_QAM_reference_Rs_%i_k=%i.eps" %(self.picpath, self.Rs,k)}
-            self.constellation(argdict)
-
-            argdict={'timex'   :timex,
-                     'sigin'   :np.real(self.signal_gen._Z.Value[k,timex,0]),
-                     'ymax'    :1.1*ymax,
-                     'ymin'    :-1.1*ymax, 
-                     'tstr'    :"Tx, User=%i" %(k),
-                     'printstr':"%s/F2_system_Tx_antennas_Rs_%i_k=%i.eps" %(self.picpath, self.Rs, k)}
-            self.oscilloscope(argdict)
-
-        #Spectrum
-        for i in range(self.Users):
-            argdict={'sigin':self.signal_gen._Z.Value[i,:,0],
-                     'ymax':3, 
-                     'ymin':spectrumfloorideal,
-                     'nperseg':1024, 
-                     'tstr' : "Tx, User:%i" %(i),
-                     'printstr':"%s/F2_system_Tx_antennas_Spectrum_Rs_%i_k=%i.eps" %(self.picpath, self.Rs, i)} 
-            self.spectrum_analyzer(**argdict)
-
-        #Plot Rx inputs
-        ymax=0
-        for i in range(self.Rxantennas):
-            ymax=np.amax([ymax, np.amax(np.amax(np.absolute(np.real(self.dut.rx[i].iptr_A.Value))))])
-
-        for i in range(len(self.dut.rx)):
-            argdict={'timex'   :timex, 
-                     'sigin'   :np.real(self.dut.rx[i].iptr_A.Value[timex]),
-                     'ymax'    :1.1*ymax,
-                     'ymin'    :-1.1*ymax, 
-                     'tstr' : "Rx, Ant=%i" %(i), 
-                     'printstr':"%s/F2_system_Antenna_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
-            self.oscilloscope(argdict)
-
-
-        #Spectrum
-        for i in range(self.Rxantennas):
-            argdict={'sigin':self.dut.rx[i].iptr_A.Value,
-                     'ymax':3, 
-                     'ymin':spectrumfloorideal,
-                     'nperseg':1024, 
-                     'tstr' : "Rx, Ant=%i" %(i), 
-                     'printstr':"%s/F2_system_Antenna_Spectrum_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
-            self.spectrum_analyzer(**argdict)
-
-        #Plot the rx output signals
-        ymax=0
-        for i in range(self.Rxantennas):
-            ymax=np.amax([ymax, np.amax(np.amax(np.absolute(np.real(self.dut.rx[i]._Z.Value))))])
-        for i in range(len(self.dut.rx)):
-            argdict={'timex'   :timex, 
-                     'sigin'   :np.real(self.dut.rx[i]._Z.Value[timex]),
-                     'ymax'    :1.1*ymax,
-                     'ymin'    :-1.1*ymax, 
-                     'tstr'    :"Rx, rxm=%s, Ant=%i" %(self.dut.rx[i].model,i),
-                     'printstr':"%s/F2_system_Rx_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i) }
-            self.oscilloscope(argdict)
-
-
-        #Spectrum
-        for i in range(self.Rxantennas):
-            argdict={'sigin':self.dut.rx[i]._Z.Value,
-                     'ymax':3, 
-                     'ymin':spectrumfloorideal,
-                     'nperseg':1024, 
-                     'tstr' : "Rx, Rx=%i" %(i), 
-                     'printstr':"%s/F2_system_Rx_Spectrum_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
-            self.spectrum_analyzer(**argdict)
-
-        #Plot the Adc output signals
-        ymax=0
-        for i in range(self.Rxantennas):
-            ymax=np.amax([ymax, np.amax(np.amax(np.absolute(np.real(self.dut.adc[i]._Z.Value))))])
-
-        for i in range(len(self.dut.adc)):
-            argdict={'timex'   :timex, 
-                     'sigin'   :np.real(self.dut.adc[i]._Z.Value[timex]),
-                     'ymax'    :1.1*ymax,
-                     'ymin'    :-1.1*ymax, 
-                     'tstr'    :"ADC, adcm=%s, Ant=%i" %(self.dut.adc[i].model,i),
-                     'printstr': "%s/F2_system_ADC_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)} 
-            self.oscilloscope(argdict)
-
-            argdict={'sigin':self.dut.adc[i]._Z.Value,
-                     'ymax':3, 
-                     'ymin':spectrumfloorideal,
-                     'nperseg':1024, 
-                     'tstr' : "ADC, Rx=%i" %(i), 
-                     'printstr':"%s/F2_system_ADC_Spectrum_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
-            self.spectrum_analyzer(**argdict)
-
-        #Plot dsp and serdes
-        ymax=0
-        ymaxfsyncl=0
-        ymaxfsyncs=0
-        syncrange=np.array(range(0,700))
-        for i in range(self.Rxantennas):
-            for k in range(self.Users):
-                ymax=np.amax([ymax,np.amax(np.absolute(np.real(self.dut.serdes._Z.Value[timex,k])))])
-
-        for i in range(self.Rxantennas):
-            ymaxfsyncs=np.amax([ymaxfsyncs,np.amax(np.absolute(self.dut.dsp[i]._Frame_sync_short.Value[syncrange]))])
-            ymaxfsyncl=np.amax([ymaxfsyncl,np.amax(np.absolute(self.dut.dsp[i]._Frame_sync_long.Value[syncrange]))])
-
-        for i in range(self.Rxantennas):
-            argdict={'timex'   :syncrange,
-                     'sigin'   :np.real(self.dut.dsp[i]._Frame_sync_short.Value[syncrange]),
-                     'ymax'    :1.1*ymaxfsyncs,
-                     'ymin'    :0, 
-                     'tstr'    : "DSP Framesync short, Ant=%i, model %s" %(i, self.dut.dsp[i].model),
-                     'printstr':"%s/F2_system_DSP_Fsync_short_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
-            self.oscilloscope(argdict)
-
-            argdict={'timex'   :syncrange,
-                     'sigin'   :self.dut.dsp[i]._Frame_sync_long.Value[syncrange],
-                     'ymax'    :1.1*ymaxfsyncl,
-                     'ymin'    :0, 
-                     'tstr'    : "DSP Framesync long, Ant=%i, model %s" %(i, self.dut.dsp[i].model),
-                     'printstr':"%s/F2_system_DSP_Fsync_long_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
-            self.oscilloscope(argdict)
-
-        for i in range(self.Rxantennas):
-            for k in range(self.Users):
-                l=np.amin([self.signal_gen._qam_reference.shape[1], self.dut.dsp[i]._symbols.Value[k].Value.shape[0]])
-                EVM=self.evm_calculator({'ref':self.signal_gen._qam_reference[k,0:l],'signal':self.dut.dsp[i]._symbols.Value[k].Value[0:l]})
-                l=np.amin([self.signal_gen._bitstream_reference.shape[1], self.dut.dsp[i]._bitstream.Value[k].Value.shape[0]])
-                BER=self.ber_calculator({'ref':self.signal_gen._bitstream_reference[k,0:l],'signal':self.dut.dsp[i]._bitstream.Value[k].Value[0:l]})
-                argdict={'I'       :np.real(self.dut.dsp[i]._symbols.Value[k].Value), 
-                         'Q'       :np.imag(self.dut.dsp[i]._symbols.Value[k].Value),
-                         'ymax'    :1.1*ymax,
-                         'ymin'    :-1.1*ymax, 
-                         'tstr'    : "DSP, Ant=%i, Usr=%i, %s, EVM=%0.2f dB, BER= %0.3g" %(i, k, self.dut.dsp[i].model, EVM,BER),
-                         'printstr':"%s/F2_system_DSP_Rs_%i_m=%i_k=%i.eps" %(self.picpath, self.Rs, i,k)}
-                self.constellation(argdict)
-
-
-        for k in range(self.Users):
-            l=np.amin([self.signal_gen._qam_reference.shape[1], self.dut.postproc._symbols.Value.shape[0]])
-            EVM=self.evm_calculator({'ref':self.signal_gen._qam_reference[k,0:l],'signal':self.dut.postproc._symbols.Value[0:l,k]})
-            l=np.amin([self.signal_gen._bitstream_reference.shape[1], self.dut.postproc._bitstream.Value.shape[0]])
-            BER=self.ber_calculator({'ref':self.signal_gen._bitstream_reference[k,0:l],'signal':self.dut.postproc._bitstream.Value[0:l,k]})
-            argdict={'I'       :np.real(self.dut.postproc._symbols.Value[:,k]), 
-                    'Q'       :np.imag(self.dut.postproc._symbols.Value[:,k]),
-                     'ymax'    :1.1*ymax,
-                     'ymin'    :-1.1*ymax, 
-                     'tstr'    : "Postproc, Usr=%i, %s, EVM=%0.2f dB, BER= %0.3g" %(k, self.dut.postproc.model, EVM,BER),
-                     'printstr':"%s/F2_system_Postproc_Rs_%i_k=%i.eps" %(self.picpath, self.Rs,k)}
-            self.constellation(argdict)
-
-
-            argdict={'timex'   :timex, 
-                     'sigin'   :self.dut.serdes._Z.Value[timex,k],
-                     'ymax'    :1.1*ymax,
-                     'ymin'    :0, 
-                     'tstr'    : "Serdes, %s, Usr=%i" %(self.dut.serdes.model,k),
-                     'printstr':"%s/F2_system_serdes_Rs_%i_k=%i.eps" %(self.picpath, self.Rs,k)} 
-            self.oscilloscope(argdict)
 
     def analyze_rx_dsp(self):
         timex = np.array(range(0,10000))
