@@ -128,8 +128,12 @@ class f2_testbench(thesdk,analyzers_mixin):
             self.channel._Z.Value[i]=self.dut.iptr_A.Value[i] 
 
     def run_tx(self):
+        # Signals and channel inited in poth cases to have valid and defined inputs
         self.signal_gen_tx.init() # this must be re-inited, because output 
-                                  # is not compatible with input of tx_dsp
+        self.signal_gen_rx.init()
+        self.signal_gen_rx.set_transmit_power() # is not compatible with input of tx_dsp
+        self.channel.run()
+        self.dut.run_rx_analog()
         for i in range(self.Users):
             #Drive signal to DUT
             self.dut.dsp._io_lanes_rx[0].data[i].udata.Value=self.signal_gen_tx._Z.Value[i,:,0].reshape(-1,1)
@@ -137,14 +141,21 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.analyze_tx_dsp()
 
     def run_rx(self):
+        # Signals and channel inited in poth cases to have valid defined inputs
+        self.signal_gen_tx.init() # this must be re-inited, because output 
         self.signal_gen_rx.init()
         self.signal_gen_rx.set_transmit_power()
         self.channel.run()
+        self.dut.run_rx_analog()
+        for i in range(self.Users):
+            #Drive signal to DUT
+            self.dut.dsp._io_lanes_rx[0].data[i].udata.Value=self.signal_gen_tx._Z.Value[i,:,0].reshape(-1,1)
         self.dut.run_rx_dsp()
+        self.analyze_rx_dsp()
 
 
     def analyze_rx_dsp(self):
-        timex = np.array(range(0,10000))
+        timex = np.array(range(len(self.signal_gen_rx._Z.Value[0,:,0])))
         
         spectrumfloor=-40
         spectrumfloorideal=-75
@@ -249,6 +260,7 @@ class f2_testbench(thesdk,analyzers_mixin):
                 ymax=np.amax([ymax,np.amax(np.absolute(np.real(self.dut.dsp._io_lanes_tx[0].data[i].udata.Value)))])
 
         ##Plot the DSP output signals
+        timex = np.array(range(len(self.dut.dsp._io_lanes_tx[0].data[0].udata.Value[:])))
         for i in range(4):
             argdict={'timex'   :timex, 
                      'sigin'   :np.real(self.dut.dsp._io_lanes_tx[0].data[i].udata.Value[timex]),
@@ -297,7 +309,7 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'sigin'   :np.real(self.signal_gen_tx._Z.Value[k,timex,0]),
                      'ymax'    :1.1*ymax,
                      'ymin'    :-1.1*ymax, 
-                     'tstr'    :"Tx, User=%i" %(k),
+                     'tstr'    :"Tx_signal gen, User=%i" %(k),
                      'printstr':"%s/F2_system_Tx_input_Rs_%i_k=%i.eps" %(self.picpath, self.Rs_dsp, k)}
             self.oscilloscope(argdict)
 
@@ -309,13 +321,14 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'ymax':3, 
                      'ymin':spectrumfloorideal,
                      'nperseg':1024, 
-                     'tstr' : "Tx, User:%i" %(i),
+                     'tstr' : "Tx signal gen, User:%i" %(i),
                      'printstr':"%s/F2_system_Tx_input_Spectrum_Rs_%i_k=%i.eps" %(self.picpath, self.Rs_dsp, i)} 
             self.spectrum_analyzer(**argdict)
 
         #Plot the tx output signals
         #timex = np.array(range(15000,len(self.dut.tx_dacs[0]._Z.Value)))
-        timex = np.array(range(17000,19000))
+        #timex = np.array(range(17000,19000))
+        timex = np.array(range(1024,len(self.dut.tx_dacs[0]._Z.Value)-1024))
         ymax=0
         for i in range(self.Txantennas):
             ymax=np.amax([ymax, np.amax(np.amax(np.absolute(np.real(self.dut.tx_dacs[i]._Z.Value))))])
@@ -325,11 +338,12 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'sigin'   :np.real(self.dut.tx_dacs[i]._Z.Value[timex]),
                      'ymax'    :1.1*ymax,
                      'ymin'    :-1.1*ymax, 
-                     'tstr'    :"Rx, rxm=%s, Ant=%i" %(self.dut.tx_dacs[i].model,i),
+                     'tstr'    :"Tx dac, tx model=%s, Ant=%i" %(self.dut.tx_dacs[i].model,i),
                      'printstr':"%s/F2_system_Tx_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i) }
             self.oscilloscope(argdict)
 
-        timex = np.array(range(17000,len(self.dut.tx_dacs[0]._Z.Value)))
+        #timex = np.array(range(0,len(self.dut.tx_dacs[0]._Z.Value)))
+        timex = np.array(range(1024,len(self.dut.tx_dacs[0]._Z.Value)-1024))
             #Spectrum
         for i in range(self.Txantennas):
             argdict={'sigin':self.dut.tx_dacs[i]._Z.Value[timex],
@@ -337,7 +351,7 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'ymax':3, 
                      'ymin':spectrumfloorideal,
                      'nperseg':1024, 
-                     'tstr' : "Rx, Rx=%i" %(i), 
+                     'tstr' : "Tx dac, Tx=%i" %(i), 
                      'printstr':"%s/F2_system_Tx_Spectrum_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
             self.spectrum_analyzer(**argdict)
 
