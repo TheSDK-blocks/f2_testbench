@@ -56,6 +56,7 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.DSPmode = 'cpu';                   #['cpu' | 'local'] bamforming can be local 
         self.dsp_decimator_model='py'
         self.dsp_decimator_scales=[1,1,1,1]
+        self.dsp_decimator_cic3shift=12
         self.noisetemp=290
         self.nserdes=2
         self.Rs=160e6
@@ -260,7 +261,7 @@ class f2_testbench(thesdk,analyzers_mixin):
                 ymax=np.amax([ymax,np.amax(np.absolute(np.real(self.dut.dsp._io_lanes_tx[0].data[i].udata.Value)))])
 
         ##Plot the DSP output signals
-        timex = np.array(range(len(self.dut.dsp._io_lanes_tx[0].data[0].udata.Value[:])))
+        timex = np.array(range(256,len(self.dut.dsp._io_lanes_tx[0].data[0].udata.Value[:])))
         for i in range(4):
             argdict={'timex'   :timex, 
                      'sigin'   :np.real(self.dut.dsp._io_lanes_tx[0].data[i].udata.Value[timex]),
@@ -270,7 +271,7 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'printstr': "%s/F2_system_DSP_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)} 
             self.oscilloscope(argdict)
 
-            argdict={'sigin':self.dut.dsp._io_lanes_tx[0].data[i].udata.Value,
+            argdict={'sigin':self.dut.dsp._io_lanes_tx[0].data[i].udata.Value[timex],
                      'ymax'    :3, 
                      'ymin'    :spectrumfloorideal,
                      'Rs'      :self.Rs_dsp,
