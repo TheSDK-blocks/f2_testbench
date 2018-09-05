@@ -45,23 +45,26 @@ class f2_testbench(thesdk,analyzers_mixin):
     def __init__(self,*arg):
         self.picpath=[]
         #Signals should be in form s(user,time,Txantenna)
-        self.Txantennas=1                       #All the antennas process the same data
-        self.Txpower=30                         #Output power per antenna in dBm
+        self.Txantennas=1                       # All the antennas process the same data
+        self.Txpower=30                         # Output power per antenna in dBm
         self.Rxantennas=4
         self.Users=2
-        self.Nbits=10  #ADC bits
-        self.Txbits=9  #DAC bits
+        self.Nbits=10                           # ADC bits
+        self.Txbits=9                           # DAC bits
         self.Channeldir='Uplink'
-        self.CPUBFmode = 'ZF';                  #['BF' | 'ZF'] Default to beam forming 
-        self.DSPmode = 'cpu';                   #['cpu' | 'local'] bamforming can be local 
-        self.dsp_decimator_model='py'
+        #self.CPUBFmode = 'ZF';                  #['BF' | 'ZF'] Default to beam forming 
+        #self.DSPmode = 'cpu';                   #['cpu' | 'local'] bamforming can be local 
+        #self.dsp_decimator_model='py'
         self.dsp_decimator_scales=[1,1,1,1]
         self.dsp_decimator_cic3shift=12
+        self.rx_output_mode=1
         self.noisetemp=290
         self.nserdes=2
         self.Rs=160e6
-        self.Rs_dsp=20e6
-        self.Hstf=1                             #Synchronization filter
+        self.Rxgain=10                          # RF gain (linear)
+        self.Rx_NF_dB=15                        # Receiver noise figure
+        self.Rs_dsp=20e6                        # Dsp base-band sampling rate
+        #self.Hstf=1                             # Synchronization filter
         self.bbsigdict=f2_testbench.bbsigdict_802_11n_random_QAM16_OFDM
         self.channeldict=f2_testbench.channeldict_802_11n_C
         self.DEBUG= False
