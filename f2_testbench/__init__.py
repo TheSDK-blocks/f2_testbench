@@ -153,6 +153,10 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.dut.run_rx_analog()
         for i in range(self.Users):
             #Drive signal to DUT
+            print(i)
+            print(self.Users)
+            print(len(self.dut.dsp._io_lanes_rx[0].data))
+            print(self.signal_gen_tx._Z.Value.shape)
             self.dut.dsp._io_lanes_rx[0].data[i].udata.Value=self.signal_gen_tx._Z.Value[i,:,0].reshape(-1,1)
         self.dut.run_rx_dsp()
         self.analyze_rx_dsp()
