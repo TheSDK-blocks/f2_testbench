@@ -333,19 +333,22 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'printstr':"%s/F2_system_Tx_input_Spectrum_Rs_%i_k=%i.eps" %(self.picpath, self.Rs_dsp, i)} 
             self.spectrum_analyzer(**argdict)
 
+
         #Plot the tx output signals
-        #timex = np.array(range(15000,len(self.dut.tx_dacs[0]._Z.Value)))
-        #timex = np.array(range(17000,19000))
         timex = np.array(range(1024,len(self.dut.tx_dacs[0]._Z.Value)-1024))
+        #timex = np.array(range(len(self.dut.tx_dacs[0]._Z.Value)-2000,len(self.dut.tx_dacs[0]._Z.Value)-1024))
+        #timex = np.array(range(1024,2000))
         ymax=0
         for i in range(self.Txantennas):
             ymax=np.amax([ymax, np.amax(np.amax(np.absolute(np.real(self.dut.tx_dacs[i]._Z.Value))))])
+            #ymax=np.amax([ymax, np.amax(np.amax(np.absolute(np.real(self.dut.dsp.tx_dsp.tx_paths[i].interpolator._Z.Value))))])
         #ymax=reduce((lambda x,y:  np.amax([np.amax(np.absolute(np.real(y._Z.Value))),x])),self.dut.tx_dacs)
+                     #'sigin'   :np.real(self.dut.dsp.tx_dsp.tx_paths[i].interpolator._Z.Value[timex]),
         for i in range(len(self.dut.tx_dacs)):
             argdict={'timex'   :timex, 
-                     'sigin'   :np.real(self.dut.tx_dacs[i]._Z.Value[timex]),
                      'ymax'    :1.1*ymax,
                      'ymin'    :-1.1*ymax, 
+                     'sigin'   :np.real(self.dut.tx_dacs[i]._Z.Value[timex]),
                      'tstr'    :"Tx dac, tx model=%s, Ant=%i" %(self.dut.tx_dacs[i].model,i),
                      'printstr':"%s/F2_system_Tx_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i) }
             self.oscilloscope(argdict)
