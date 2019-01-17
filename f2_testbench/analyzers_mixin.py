@@ -17,7 +17,7 @@ class analyzers_mixin:
         tstr=argdict['tstr']
         printstr=argdict['printstr']
         msg="Generating %s" %(printstr)
-        self.print_log({'type':'I', 'msg': msg}) 
+        self.print_log(type='I', msg=msg) 
 
         figure=plt.figure()
         h=plt.subplot();
@@ -45,7 +45,7 @@ class analyzers_mixin:
         tstr=argdict['tstr']
         printstr=argdict['printstr']
         msg="Generating %s" %(printstr)
-        self.print_log({'type':'I', 'msg': msg}) 
+        self.print_log(type='I', msg=msg) 
 
         figure=plt.figure()
         h=plt.subplot();
@@ -69,7 +69,7 @@ class analyzers_mixin:
 
     def spectrum_analyzer(self, **kwargs):
         #Example argdict
-        #argdict={'sig':self.signal_gen._Z.Value[i,:,0],'ymax':3, 'ymin':spectrumfloorideal,'nperseg':1024, 
+        #argdict={'sig':self.signal_gen._Z.Data[i,:,0],'ymax':3, 'ymin':spectrumfloorideal,'nperseg':1024, 
         #       'tstr' : "Tx, User:%i" %(i),'printstr':"%s/F2_system_Tx_antennas_Spectrum_Rs_%i_k:%i.eps" %(self.picpath, self.Rs, i)} 
         ymax=kwargs.get('ymax',3)
         ymin=kwargs.get('ymin',-80)
@@ -82,7 +82,7 @@ class analyzers_mixin:
         tstr=kwargs['tstr']
         printstr=kwargs['printstr']
         msg="Generating %s" %(printstr)
-        self.print_log({'type':'I', 'msg': msg}) 
+        self.print_log(type='I', msg=msg) 
         figure=plt.figure()
         h=plt.subplot();
         hfont = {'fontname':'Sans'}
@@ -116,7 +116,7 @@ class analyzers_mixin:
         tstr = argdict['tstr']
         printstr=argdict['printstr']
         msg="Generating %s" %(printstr)
-        self.print_log({'type':'I', 'msg': msg}) 
+        self.print_log(type='I', msg=msg) 
     
         figure=plt.figure()
         h=plt.subplot();
@@ -147,7 +147,7 @@ class analyzers_mixin:
         rmsref=np.std(reference)
         rmsreceived=np.std(received)
         EVM=10*np.log10(np.mean(np.mean(np.abs(received/rmsreceived*rmsref-reference)**2,axis=0)/np.mean(np.abs(reference)**2,axis=0)))
-        self.print_log({'type':'I', 'msg':"Estimated EVM is %0.2f dB" %(EVM)})
+        self.print_log(type='I', msg="Estimated EVM is %0.2f dB" %(EVM))
         return EVM
 
     def ber_calculator(self,argdict):
@@ -169,9 +169,9 @@ class analyzers_mixin:
         errors=np.sum(np.sum(np.abs(received-reference),axis=0))/(received.shape[0]*received.shape[1])
         errors=np.sum(np.sum(np.abs(received-reference),axis=0))
         bits=(received.shape[0]*received.shape[1])
-        self.print_log({'type':'I', 'msg': "Received %i errors in %i bits" %(int(errors), int(bits))})
+        self.print_log(type='I', msg="Received %i errors in %i bits" %(int(errors), int(bits)))
         BER=errors/bits
-        self.print_log({'type':'I', 'msg': "Resulting BER is %0.3g" %(BER)})
+        self.print_log(type='I', msg="Resulting BER is %0.3g" %(BER))
         return BER
 
 #From Kosta. 
