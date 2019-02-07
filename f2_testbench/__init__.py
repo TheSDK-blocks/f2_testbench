@@ -10,6 +10,7 @@ from signal_generator_802_11n import *
 from f2_util_classes import *
 
 from f2_chip import *
+from f2_scan_controller import *
 from f2_channel import *
 from f2_testbench.analyzers_mixin import *
 
@@ -64,7 +65,7 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.Rxgain=10                          # RF gain (linear)
         self.Rx_NF_dB=15                        # Receiver noise figure
         self.Rs_dsp=20e6                        # Dsp base-band sampling rate
-        #self.Hstf=1                             # Synchronization filter
+        #self.Hstf=1                            # Synchronization filter
         self.bbsigdict=f2_testbench.bbsigdict_802_11n_random_QAM16_OFDM
         self.channeldict=f2_testbench.channeldict_802_11n_C
         self.DEBUG= False
@@ -82,6 +83,9 @@ class f2_testbench(thesdk,analyzers_mixin):
         [ self.Disableuser.append(False) for i in range(self.Users) ]              #Disable data transmission for cerrtain users
         self.Rxantennalocations=np.arange(self.Rxantennas)*0.3
 
+        #Add scan controller
+        self.scan_controller=f2_scan_controller(self)
+
         self.dut=f2_chip(self)
         self.dut.bbsigdict=self.bbsigdict
 
@@ -89,6 +93,7 @@ class f2_testbench(thesdk,analyzers_mixin):
         #self.dut.Rs=self.Rs
         self.dut.Txbits=self.Txbits
         self.dut.Txpower=0
+        self.dut.scan=self.scan_controller._scan
         self.dut.init()
 
         #TX_signal_generator
@@ -103,7 +108,6 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.signal_gen_tx.Bits=13
 
         # Matrix of [users,time,antennas] 
-        #We could add an IO to dut.
         #Cant connect here. Formats incompatible
         #self.dut.tx_dsp.iptr_A=self.signal_gen_tx._Z
 
@@ -117,6 +121,7 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.signal_gen_rx.Users=self.Users
         self.signal_gen_rx.bbsigdict=self.bbsigdict
         self.signal_gen_rx.Rs=self.Rs
+
 
         #Add the channel between 
         self.channel=f2_channel(self)
