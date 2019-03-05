@@ -49,6 +49,7 @@ class f2_testbench(thesdk,analyzers_mixin):
         self.Txantennas=1                       # All the antennas process the same data
         self.Txpower=30                         # Output power per antenna in dBm
         self.Rxantennas=4
+        self.neighbours=4
         self.Users=2
         self.Nbits=10                           # ADC bits
         self.Txbits=9                           # DAC bits
