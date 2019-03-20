@@ -22,18 +22,24 @@ class f2_testbench(thesdk,analyzers_mixin):
     #Baseband signal dictionaries are used to control the signal generator
     #-----Sinusoidal test signals
     # Check if working. Receiver is now fiexed to OFDM
-    bbsigdict_sinusoid={ 'mode':'sinusoid', 'freqs':[1.0e6 ], 'length':2**14, 'BBRs':40e6 };
-    bbsigdict_sinusoid3= { 'mode':'sinusoid', 'freqs':[1.0e6 , 3e6, 7e6 ], 'length':2**14, 'BBRs':20e6 };
-    bbsigdict_ofdm_sinusoid3={ 'mode':'ofdm_sinusoid', 'freqs':[-7.0e6 , 2e6, 5e6 ], 'length':2**14, 'BBRs':20e6 };
+    bbsigdict_sinusoid={ 'mode':'sinusoid', 'freqs':[1.0e6 ], 
+                         'length':2**14, 'BBRs':40e6 };
+    bbsigdict_sinusoid3= { 'mode':'sinusoid', 'freqs':[1.0e6 , 3e6, 7e6 ], 
+            'length':2**14, 'BBRs':20e6 };
+    bbsigdict_ofdm_sinusoid3={ 'mode':'ofdm_sinusoid', 
+            'freqs':[-7.0e6 , 2e6, 5e6 ], 'length':2**14, 'BBRs':20e6 };
     
     #-----Data signals
-    bbsigdict_randombitstream_QAM4_OFDM={ 'mode':'ofdm_random_qam', 'QAM':4, 'length':2**14, 'BBRs': 20e6 };
+    bbsigdict_randombitstream_QAM4_OFDM={ 'mode':'ofdm_random_qam', 'QAM':4, 
+            'length':2**14, 'BBRs': 20e6 };
 
-    bbsigdict_802_11n_random_QAM16_OFDM={ 'mode':'ofdm_random_802_11n', 'QAM':16, 'length':2**14, 'BBRs': 20e6 };
+    bbsigdict_802_11n_random_QAM16_OFDM={ 'mode':'ofdm_random_802_11n', 
+            'QAM':16, 'length':2**14, 'BBRs': 20e6 };
 
     #Channel dictionaries are used to16control the channel model
     channeldict_buffer= { 'model': 'lossless' , 'frequency': 1e9 }
-    channeldict_buffer_1km= { 'model': 'lossless', 'frequency': 1e9, 'distance': 1000}
+    channeldict_buffer_1km= { 'model': 'lossless', 'frequency': 1e9, 
+            'distance': 1000}
     #channeldict_lossless_awgn= { 'model': 'awgn', 'frequency': 1e9, 'bandwidth': 100e6, 'distance': 0 }
 
     channeldict_802_11n_A= { 'model': 'A',  'distance': 1000}
@@ -366,4 +372,33 @@ class f2_testbench(thesdk,analyzers_mixin):
                      'tstr' : "Tx dac, Tx=%i" %(i), 
                      'printstr':"%s/F2_system_Tx_Spectrum_Rs_%i_m=%i.eps" %(self.picpath, self.Rs, i)}
             self.spectrum_analyzer(**argdict)
+
+    def analyze_bypass_rx(self):
+        #Expect clean spectrum read trough scan
+        # Stores received Rx signals to memory and reads it i
+        # out throgh scan
+        pass
+
+    def analyze_bypas_tx(self):
+        # Fill in the memory through scan
+        # Transmit it through _TX3_
+        #Expect ramp at the DAC output
+        pass
+
+    def analyze_rx_fill_and_flush(self):
+        #Expect received signal to be flushed through?
+        pass
+
+    def analyze_rx_test_loops(self):
+        #Expect received signal to be looped through?
+        pass
+    
+    def analyze_rx_and_tx_through_memory(self):
+        #Expect received signal to be written to memory between
+        # ~70ms-510ms
+        #Expect transmission of received signal through Tx 520-880ms
+        # (Tx gain should be reduced by 8 before hb1)
+        #Expect received signal to be scanned out ~890ms-1290ms
+        pass
+
 
